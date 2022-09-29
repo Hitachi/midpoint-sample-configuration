@@ -1,0 +1,70 @@
+version: '3.8'
+services:
+  ldap-server:
+    image: osixia/openldap:latest
+    restart: always
+    environment:
+      LDAP_DOMAIN: example.com
+      LDAP_LOG_LEVEL: "64"
+      LDAP_REMOVE_CONFIG_AFTER_SETUP: "false"
+      LDAP_TLS: "false"
+      LDAP_ADMIN_PASSWORD: "secret"
+    command: --loglevel debug
+    volumes:
+      - ./data/openldap/bootstrap:/container/service/slapd/assets/config/bootstrap/ldif/custom/
+    ports:
+      - "389:389"
+    networks:
+      - net
+  ldap-admin:
+    image: osixia/phpldapadmin:latest
+    restart: always
+    environment:
+      PHPLDAPADMIN_LDAP_HOSTS: "ldap-server"
+      PHPLDAPADMIN_HTTPS: "false"
+    ports:
+      - "8081:80"
+    networks:
+      - net
+  midpoint:
+    image: evolveum/midpoint:4.4.3-alpine
+    restart: always
+    ports:
+      - "8080:8080"
+    networks:
+      - net
+    volumes:
+      - ./data/midpoint:/opt/midpoint/var/resources/
+  postgresql:
+    image: postgres:latest
+    hostname: postgres
+    restart: always
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgresql:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: dev
+    networks:
+      - net
+  pgadmin4:
+    image: dpage/pgadmin4:latest
+    restart: always
+    ports:
+      - "8082:80"
+    volumes:
+      - ./data/postgresql/servers.json:/pgadmin4/servers.json
+    environment:
+      PGADMIN_DEFAULT_EMAIL: taichi.yamada@example.com
+      PGADMIN_DEFAULT_PASSWORD: password
+    depends_on:
+      - postgresql
+    networks:
+      - net
+networks:
+  net:
+    driver: bridge
+volumes:
+  postgresql:
