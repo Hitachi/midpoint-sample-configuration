@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resource xmlns="http://midpoint.evolveum.com/xml/ns/public/common/common-3"
+    xmlns:c="http://midpoint.evolveum.com/xml/ns/public/common/common-3"
+    xmlns:q="http://prism.evolveum.com/xml/ns/public/query-3"
+    xmlns:icfs="http://midpoint.evolveum.com/xml/ns/public/connector/icf-1/resource-schema-3"
+    xmlns:ri="http://midpoint.evolveum.com/xml/ns/public/resource/instance-3"
+    xmlns:ext="http://midpoint.evolveum.com/xml/ns/story/orgsync/ext"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:icfc="http://midpoint.evolveum.com/xml/ns/public/connector/icf-1/connector-schema-3">
+
+    <name>Learning System</name>
+
+    <connectorRef type="ConnectorType">
+        <filter>
+            <q:equal>
+                <q:path>c:connectorType</q:path>
+                <q:value>com.evolveum.polygon.connector.csv.CsvConnector</q:value>
+            </q:equal>
+        </filter>
+    </connectorRef>
+
+    <connectorConfiguration>
+        <icfc:configurationProperties
+            xmlns:icfccsvfile="http://midpoint.evolveum.com/xml/ns/public/connector/icf-1/bundle/com.evolveum.polygon.connector-csv/com.evolveum.polygon.connector.csv.CsvConnector">
+            <icfccsvfile:filePath>/opt/midpoint/var/resources/chapter-3/learning.csv</icfccsvfile:filePath>
+            <icfccsvfile:encoding>utf-8</icfccsvfile:encoding>
+            <icfccsvfile:fieldDelimiter>,</icfccsvfile:fieldDelimiter>
+            <icfccsvfile:multivalueDelimiter>;</icfccsvfile:multivalueDelimiter>
+            <icfccsvfile:uniqueAttribute>empno</icfccsvfile:uniqueAttribute>
+            <icfccsvfile:passwordAttribute>password</icfccsvfile:passwordAttribute>
+        </icfc:configurationProperties>
+
+    </connectorConfiguration>
+
+    <schemaHandling>
+
+        <objectType>
+            <displayName>Default Account</displayName>
+            <default>true</default>
+            <intent>default</intent>
+            <kind>account</kind>
+            <objectClass>ri:AccountObjectClass</objectClass>
+            <attribute>
+                <ref>ri:empno</ref>
+                <displayName>Name</displayName>
+                <outbound>
+                    <source>
+                        <path>$focus/name</path>
+                    </source>
+                </outbound>
+            </attribute>
+            <attribute>
+                <ref>ri:firstname</ref>
+                <displayName>First name</displayName>
+                <outbound>
+                    <source>
+                        <path>$focus/givenName</path>
+                    </source>
+                </outbound>
+            </attribute>
+            <attribute>
+                <ref>ri:lastname</ref>
+                <displayName>Last name</displayName>
+                <outbound>
+                    <source>
+                        <path>$focus/familyName</path>
+                    </source>
+                </outbound>
+            </attribute>
+            <activation>
+                <administrativeStatus>
+                    <outbound />
+                </administrativeStatus>
+            </activation>
+            <credentials>
+                <password>
+                    <outbound />
+                </password>
+            </credentials>
+        </objectType>
+
+    </schemaHandling>
+    <synchronization>
+        <objectSynchronization>
+            <intent>default</intent>
+            <enabled>false</enabled>
+            <correlation>
+                <q:equal>
+                    <q:path>employeeNumber</q:path>
+                    <expression>
+                        <path>$shadow/attributes/empno</path>
+                    </expression>
+                </q:equal>
+            </correlation>
+            <reconcile>false</reconcile>
+
+            <reaction>
+                <situation>linked</situation>
+                <synchronize>true</synchronize>
+            </reaction>
+            <reaction>
+                <situation>deleted</situation>
+                <action>
+                    <handlerUri>http://midpoint.evolveum.com/xml/ns/public/model/action-3#unlink</handlerUri>
+                </action>
+            </reaction>
+            <reaction>
+                <situation>unlinked</situation>
+                <action>
+                    <handlerUri>http://midpoint.evolveum.com/xml/ns/public/model/action-3#link</handlerUri>
+                </action>
+            </reaction>
+            <reaction>
+                <situation>unmatched</situation>
+                <action>
+                    <handlerUri>http://midpoint.evolveum.com/xml/ns/public/model/action-3#addFocus</handlerUri>
+                </action>
+            </reaction>
+        </objectSynchronization>
+    </synchronization>
+
+    <capabilities xmlns:cap="http://midpoint.evolveum.com/xml/ns/public/resource/capabilities-3">
+        <configured>
+            <cap:activation>
+                <cap:status>
+                    <cap:attribute>ri:enabled</cap:attribute>
+                    <cap:enableValue>true</cap:enableValue>
+                    <cap:disableValue>false</cap:disableValue>
+                </cap:status>
+            </cap:activation>
+        </configured>
+    </capabilities>
+</resource>

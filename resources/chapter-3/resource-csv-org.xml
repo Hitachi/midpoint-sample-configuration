@@ -1,15 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<resource   xmlns="http://midpoint.evolveum.com/xml/ns/public/common/common-3"
-            xmlns:c="http://midpoint.evolveum.com/xml/ns/public/common/common-3"
-            xmlns:q="http://prism.evolveum.com/xml/ns/public/query-3"
-            xmlns:icfs="http://midpoint.evolveum.com/xml/ns/public/connector/icf-1/resource-schema-3"
-            xmlns:ri="http://midpoint.evolveum.com/xml/ns/public/resource/instance-3"
-            xmlns:ext="http://midpoint.evolveum.com/xml/ns/story/orgsync/ext"
-            xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-            xmlns:icfc="http://midpoint.evolveum.com/xml/ns/public/connector/icf-1/connector-schema-3">
+<resource xmlns="http://midpoint.evolveum.com/xml/ns/public/common/common-3"
+    xmlns:c="http://midpoint.evolveum.com/xml/ns/public/common/common-3"
+    xmlns:q="http://prism.evolveum.com/xml/ns/public/query-3"
+    xmlns:icfs="http://midpoint.evolveum.com/xml/ns/public/connector/icf-1/resource-schema-3"
+    xmlns:ri="http://midpoint.evolveum.com/xml/ns/public/resource/instance-3"
+    xmlns:icfc="http://midpoint.evolveum.com/xml/ns/public/connector/icf-1/connector-schema-3">
 
-    <name>HR System</name>
+    <name>HR System - Org</name>
 
     <connectorRef type="ConnectorType">
         <filter>
@@ -20,60 +17,54 @@
         </filter>
     </connectorRef>
 
-    <connectorConfiguration>
+    <connectorConfiguration >
         <icfc:configurationProperties
-                    xmlns:icfccsvfile="http://midpoint.evolveum.com/xml/ns/public/connector/icf-1/bundle/com.evolveum.polygon.connector-csv/com.evolveum.polygon.connector.csv.CsvConnector">
-            <icfccsvfile:filePath>/opt/midpoint/var/resources/chapter-3/hr.csv</icfccsvfile:filePath>
+            xmlns:icfccsvfile="http://midpoint.evolveum.com/xml/ns/public/connector/icf-1/bundle/com.evolveum.polygon.connector-csv/com.evolveum.polygon.connector.csv.CsvConnector">
+            <icfccsvfile:filePath>/opt/midpoint/var/resources/chapter-3/hr-org.csv</icfccsvfile:filePath>
             <icfccsvfile:encoding>utf-8</icfccsvfile:encoding>
             <icfccsvfile:fieldDelimiter>,</icfccsvfile:fieldDelimiter>
             <icfccsvfile:multivalueDelimiter>;</icfccsvfile:multivalueDelimiter>
-            <icfccsvfile:uniqueAttribute>empno</icfccsvfile:uniqueAttribute>
-            <icfccsvfile:passwordAttribute>password</icfccsvfile:passwordAttribute>
+            <icfccsvfile:uniqueAttribute>orgnum</icfccsvfile:uniqueAttribute>
         </icfc:configurationProperties>
-
     </connectorConfiguration>
 
     <schemaHandling>
 
         <objectType>
-            <displayName>Default Account</displayName>
+            <displayName>Organization Unit</displayName>
             <default>true</default>
             <objectClass>ri:AccountObjectClass</objectClass>
+            <kind>generic</kind>
+            <intent>orgunit</intent>
+
             <attribute>
-                <ref>ri:empno</ref>
-                <displayName>Name</displayName>
+                <ref>ri:orgnum</ref>
                 <inbound>
+                    <target>
+                        <path>$focus/identifier</path>
+                    </target>
+                </inbound>
+                <inbound>
+                    <expression>
+                        <script>
+                            <code>'O'+input</code>
+                        </script>
+                    </expression>
                     <target>
                         <path>$focus/name</path>
                     </target>
                 </inbound>
+            </attribute>
+            <attribute>
+                <ref>ri:name</ref>
                 <inbound>
                     <target>
-                        <path>$focus/employeeNumber</path>
+                        <path>$focus/displayName</path>
                     </target>
                 </inbound>
             </attribute>
             <attribute>
-                <ref>ri:firstname</ref>
-                <displayName>First name</displayName>
-                <inbound>
-                    <target>
-                        <path>$focus/givenName</path>
-                    </target>
-                </inbound>
-            </attribute>
-            <attribute>
-                <ref>ri:lastname</ref>
-                <displayName>Last name</displayName>
-                <inbound>
-                    <target>
-                        <path>$focus/familyName</path>
-                    </target>
-                </inbound>
-            </attribute>
-            <attribute>
-                <ref>ri:orgnum</ref>
-                <displayName>Department</displayName>
+                <ref>ri:parent</ref>
                 <inbound>
                     <expression>
                         <assignmentTargetSearch>
@@ -90,43 +81,11 @@
                     </expression>
                     <target>
                         <path>$focus/assignment</path>
-                        <set>
-                            <condition>
-                                <script>
-                                    <code>
-                                        input?.targetRef?.type?.localPart == 'OrgType'
-                                    </code>
-                                </script>
-                            </condition>
-                        </set>
                     </target>
                 </inbound>
             </attribute>
-            <attribute>
-                <ref>ri:title</ref>
-                <displayName>Job Title</displayName>
-                <inbound>
-                    <target>
-                        <path>title</path>
-                    </target>
-                </inbound>
-            </attribute>
-            <activation>
-                <administrativeStatus>
-                    <inbound/>
-                </administrativeStatus>
-            </activation>
-
-            <credentials>
-                <password>
-                    <inbound>
-                        <expression>
-                            <asIs/>
-                        </expression>
-                    </inbound>
-                </password>
-            </credentials>
         </objectType>
+
     </schemaHandling>
 
     <projection>
@@ -136,11 +95,15 @@
     <synchronization>
         <objectSynchronization>
             <enabled>true</enabled>
+            <objectClass>AccountObjectClass</objectClass>
+            <kind>generic</kind>
+            <intent>orgunit</intent>
+            <focusType>OrgType</focusType>
             <correlation>
                 <q:equal>
-                    <q:path>c:name</q:path>
+                    <q:path>identifier</q:path>
                     <expression>
-                        <path>$projection/attributes/empno</path>
+                        <path>$projection/attributes/orgnum</path>
                     </expression>
                 </q:equal>
             </correlation>
