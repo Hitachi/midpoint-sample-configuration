@@ -1,0 +1,136 @@
+<objects xmlns='http://midpoint.evolveum.com/xml/ns/public/common/common-3'
+         xmlns:c='http://midpoint.evolveum.com/xml/ns/public/common/common-3'
+         xmlns:org='http://midpoint.evolveum.com/xml/ns/public/common/org-3'
+         xmlns:q="http://prism.evolveum.com/xml/ns/public/query-3"
+         xmlns:ri="http://midpoint.evolveum.com/xml/ns/public/resource/instance-3"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         >
+
+    <role>
+        <name>Common Application Role</name>
+        <description>
+        Example社の共通アプリケーション（全社認証基盤、研修システム）へプロビジョニングするロール
+        </description>
+        <inducement>
+            <description>Learning System</description>
+            <construction>
+                <resourceRef relation="org:default" type="c:ResourceType">
+                    <!-- Learning System -->
+                    <filter>
+                        <q:equal>
+                            <q:path>c:name</q:path>
+                            <q:value>Learning System</q:value>
+                        </q:equal>
+                    </filter>
+                </resourceRef>
+                <kind>account</kind>
+                <intent>default</intent>
+            </construction>
+            <order>2</order>
+            <focusType>UserType</focusType>
+        </inducement>
+        <inducement>
+            <description>Authentication System LDAP Group Creation</description>
+            <construction>
+                <resourceRef relation="org:default" type="c:ResourceType">
+                    <!-- LDAP -->
+                    <filter>
+                        <q:equal>
+                            <q:path>c:name</q:path>
+                            <q:value>LDAP</q:value>
+                        </q:equal>
+                    </filter>
+                </resourceRef>
+                <kind>entitlement</kind>
+                <intent>ldapGroup</intent>
+            </construction>
+        </inducement>
+        <inducement>
+            <description>Authentication System LDAP User Creation and Group Association</description>
+            <construction>
+                <description>LDAP Group Association</description>
+                <resourceRef relation="org:default" type="c:ResourceType">
+                    <!-- LDAP -->
+                    <filter>
+                        <q:equal>
+                            <q:path>c:name</q:path>
+                            <q:value>LDAP</q:value>
+                        </q:equal>
+                    </filter>
+                </resourceRef>
+                <kind>account</kind>
+                <intent>default</intent>
+            </construction>
+            <order>2</order>
+            <focusType>UserType</focusType>
+        </inducement>
+    </role>
+
+    <role>
+        <name>Development Application Role</name>
+        <description>
+        Example社の開発アプリケーション（開発ツール）へプロビジョニングするロール
+        </description>
+        <inducement>
+            <description>Developer Tools</description>
+            <construction>
+                <resourceRef type="c:ResourceType">
+                    <filter>
+                        <q:equal>
+                            <q:path>c:name</q:path>
+                            <q:value>Developer Tools</q:value>
+                        </q:equal>
+                    </filter>
+                </resourceRef>
+                <kind>account</kind>
+                <attribute>
+                    <ref>ri:accesslevel</ref>
+                    <outbound>
+                        <strength>normal</strength>
+                        <expression>
+                            <script>
+                                <code>"Developer"</code>
+                            </script>
+                        </expression>
+                    </outbound>
+                </attribute>                
+            </construction>
+            <order>2</order>
+            <focusType>UserType</focusType>
+        </inducement>
+    </role>
+
+
+    <role>
+        <name>Development Manager Role</name>
+        <description>
+        Example社の開発アプリケーションの係長以上が付与されるロール
+        </description>
+        <inducement>
+            <description>Developer Tools</description>
+            <construction>
+                <resourceRef type="c:ResourceType">
+                    <filter>
+                        <q:equal>
+                            <q:path>c:name</q:path>
+                            <q:value>Developer Tools</q:value>
+                        </q:equal>
+                    </filter>
+                </resourceRef>
+                <kind>account</kind>
+                <attribute>
+                    <ref>ri:accesslevel</ref>
+                    <outbound>
+                        <strength>strong</strength>
+                        <expression>
+                            <script>
+                                <code>"Manager"</code>
+                            </script>
+                        </expression>
+                    </outbound>
+                </attribute>                
+            </construction>
+            <focusType>UserType</focusType>
+        </inducement>
+    </role>
+</objects>

@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resource xmlns="http://midpoint.evolveum.com/xml/ns/public/common/common-3"
+    xmlns:c="http://midpoint.evolveum.com/xml/ns/public/common/common-3"
+    xmlns:q="http://prism.evolveum.com/xml/ns/public/query-3"
+    xmlns:icfs="http://midpoint.evolveum.com/xml/ns/public/connector/icf-1/resource-schema-3"
+    xmlns:ri="http://midpoint.evolveum.com/xml/ns/public/resource/instance-3"
+    xmlns:icfc="http://midpoint.evolveum.com/xml/ns/public/connector/icf-1/connector-schema-3">
+
+    <name>HR System - Org</name>
+
+    <connectorRef type="ConnectorType">
+        <filter>
+            <q:equal>
+                <q:path>c:connectorType</q:path>
+                <q:value>com.evolveum.polygon.connector.csv.CsvConnector</q:value>
+            </q:equal>
+        </filter>
+    </connectorRef>
+
+    <connectorConfiguration >
+        <icfc:configurationProperties
+            xmlns:icfccsvfile="http://midpoint.evolveum.com/xml/ns/public/connector/icf-1/bundle/com.evolveum.polygon.connector-csv/com.evolveum.polygon.connector.csv.CsvConnector">
+            <icfccsvfile:filePath>/opt/midpoint/var/resources/chapter-3/hr-org.csv</icfccsvfile:filePath>
+            <icfccsvfile:encoding>utf-8</icfccsvfile:encoding>
+            <icfccsvfile:fieldDelimiter>,</icfccsvfile:fieldDelimiter>
+            <icfccsvfile:multivalueDelimiter>;</icfccsvfile:multivalueDelimiter>
+            <icfccsvfile:uniqueAttribute>orgnum</icfccsvfile:uniqueAttribute>
+        </icfc:configurationProperties>
+    </connectorConfiguration>
+
+    <schemaHandling>
+
+        <objectType>
+            <displayName>Organization Unit</displayName>
+            <default>true</default>
+            <objectClass>ri:AccountObjectClass</objectClass>
+            <kind>generic</kind>
+            <intent>orgunit</intent>
+
+            <attribute>
+                <ref>ri:orgnum</ref>
+                <inbound>
+                    <target>
+                        <path>$focus/identifier</path>
+                    </target>
+                </inbound>
+                <inbound>
+                    <expression>
+                        <script>
+                            <code>'O'+input</code>
+                        </script>
+                    </expression>
+                    <target>
+                        <path>$focus/name</path>
+                    </target>
+                </inbound>
+            </attribute>
+            <attribute>
+                <ref>ri:name</ref>
+                <inbound>
+                    <target>
+                        <path>$focus/displayName</path>
+                    </target>
+                </inbound>
+            </attribute>
+            <attribute>
+                <ref>ri:parent</ref>
+                <inbound>
+                    <expression>
+                        <assignmentTargetSearch>
+                            <targetType>OrgType</targetType>
+                            <filter>
+                                <q:equal>
+                                    <q:path>identifier</q:path>
+                                    <expression>
+                                        <path>$input</path>
+                                    </expression>
+                                </q:equal>
+                            </filter>
+                        </assignmentTargetSearch>
+                    </expression>
+                    <target>
+                        <path>$focus/assignment</path>
+                    </target>
+                </inbound>
+                <inbound>
+                    <expression>
+                        <assignmentTargetSearch>
+                            <targetType>RoleType</targetType>
+                            <filter>
+                                <q:equal>
+                                    <q:path>name</q:path>
+                                    <q:value>Common Application Role</q:value>
+                                </q:equal>
+                            </filter>
+                        </assignmentTargetSearch>
+                    </expression>
+                    <target>
+                        <path>$focus/assignment</path>
+                    </target>
+                </inbound>
+                <inbound>
+                    <expression>
+                        <assignmentTargetSearch>
+                            <targetType>RoleType</targetType>
+                            <filter>
+                                <q:equal>
+                                    <q:path>name</q:path>
+                                    <q:value>Development Application Role</q:value>
+                                </q:equal>
+                            </filter>
+                        </assignmentTargetSearch>
+                    </expression>
+                    <target>
+                        <path>$focus/assignment</path>
+                    </target>
+                    <condition>
+                        <script>
+                            <code>
+                             input.equals("1200")
+                          </code>
+                        </script>
+                    </condition>
+                </inbound>
+            </attribute>
+        </objectType>
+
+    </schemaHandling>
+
+    <projection>
+        <assignmentPolicyEnforcement>none</assignmentPolicyEnforcement>
+    </projection>
+
+    <synchronization>
+        <objectSynchronization>
+            <enabled>true</enabled>
+            <objectClass>AccountObjectClass</objectClass>
+            <kind>generic</kind>
+            <intent>orgunit</intent>
+            <focusType>OrgType</focusType>
+            <correlation>
+                <q:equal>
+                    <q:path>identifier</q:path>
+                    <expression>
+                        <path>$projection/attributes/orgnum</path>
+                    </expression>
+                </q:equal>
+            </correlation>
+            <reaction>
+                <situation>linked</situation>
+                <synchronize>true</synchronize>
+            </reaction>
+            <reaction>
+                <situation>deleted</situation>
+                <synchronize>true</synchronize>
+                <action>
+                    <handlerUri>http://midpoint.evolveum.com/xml/ns/public/model/action-3#deleteFocus</handlerUri>
+                </action>
+            </reaction>
+            <reaction>
+                <situation>unlinked</situation>
+                <synchronize>true</synchronize>
+                <action>
+                    <handlerUri>http://midpoint.evolveum.com/xml/ns/public/model/action-3#link</handlerUri>
+                </action>
+            </reaction>
+            <reaction>
+                <situation>unmatched</situation>
+                <synchronize>true</synchronize>
+                <action>
+                    <handlerUri>http://midpoint.evolveum.com/xml/ns/public/model/action-3#addFocus</handlerUri>
+                </action>
+            </reaction>
+        </objectSynchronization>
+    </synchronization>
+</resource>
