@@ -1,0 +1,26 @@
+<task xmlns="http://midpoint.evolveum.com/xml/ns/public/common/common-3" xmlns:c="http://midpoint.evolveum.com/xml/ns/public/common/common-3" xmlns:icfs="http://midpoint.evolveum.com/xml/ns/public/connector/icf-1/resource-schema-3" xmlns:org="http://midpoint.evolveum.com/xml/ns/public/common/org-3" xmlns:q="http://prism.evolveum.com/xml/ns/public/query-3" xmlns:ri="http://midpoint.evolveum.com/xml/ns/public/resource/instance-3" xmlns:t="http://prism.evolveum.com/xml/ns/public/types-3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" oid="8dc0303c-9a66-4a5f-960b-ff6c873ee250" version="6">
+    <name>月次棚卸し起動タスク</name>
+    <assignment>
+        <targetRef oid="00000000-0000-0000-0000-000000000520" relation="org:default" type="c:ArchetypeType">
+            <!-- Certification-related task -->
+        </targetRef>
+    </assignment>
+    <archetypeRef oid="00000000-0000-0000-0000-000000000520" relation="org:default" type="c:ArchetypeType">
+        <!-- Certification-related task -->
+    </archetypeRef>
+    <roleMembershipRef oid="00000000-0000-0000-0000-000000000520" relation="org:default" type="c:ArchetypeType">
+        <!-- Certification-related task -->
+    </roleMembershipRef>
+    <taskIdentifier>1681269490826-0-1</taskIdentifier>
+    <ownerRef oid="00000000-0000-0000-0000-000000000002" relation="org:default" type="c:UserType">
+        <!-- administrator -->
+    </ownerRef>
+    <executionState>runnable</executionState>
+    <category>AccessCertification</category>
+    <handlerUri>http://midpoint.evolveum.com/xml/ns/public/certification/task/campaign-creation/handler-3</handlerUri>
+    <objectRef type="AccessCertificationDefinitionType" oid="3e4fb1d0-219e-411a-833a-2239c0f02a28" />
+    <binding>loose</binding>
+    <schedule>
+        <cronLikePattern>0 0 0 1 * ?</cronLikePattern>
+    </schedule>
+</task>

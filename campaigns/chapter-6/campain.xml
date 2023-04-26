@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<accessCertificationDefinition
+            xmlns="http://midpoint.evolveum.com/xml/ns/public/common/common-3"
+            xmlns:c="http://midpoint.evolveum.com/xml/ns/public/common/common-3"
+            xmlns:icfs="http://midpoint.evolveum.com/xml/ns/public/connector/icf-1/resource-schema-3"
+            xmlns:org="http://midpoint.evolveum.com/xml/ns/public/common/org-3"
+            xmlns:q="http://prism.evolveum.com/xml/ns/public/query-3"
+            xmlns:ri="http://midpoint.evolveum.com/xml/ns/public/resource/instance-3"
+            xmlns:t="http://prism.evolveum.com/xml/ns/public/types-3"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            oid="3e4fb1d0-219e-411a-833a-2239c0f02a28">
+
+    <name>月次棚卸し</name>
+    <handlerUri>http://midpoint.evolveum.com/xml/ns/public/certification/handlers-3#direct-assignment</handlerUri>
+    <scopeDefinition xsi:type="c:AccessCertificationAssignmentReviewScopeType">
+        <name>スコープ定義</name>
+        <objectType>UserType</objectType>
+        <includeAssignments>true</includeAssignments>
+        <includeInducements>false</includeInducements>
+        <includeResources>false</includeResources>
+        <includeRoles>true</includeRoles>
+        <includeOrgs>false</includeOrgs>
+        <includeServices>false</includeServices>
+        <includeUsers>false</includeUsers>
+        <enabledItemsOnly>true</enabledItemsOnly>
+        <relation>org:default</relation>
+    </scopeDefinition>
+    <remediationDefinition>
+        <style>automated</style>
+    </remediationDefinition>
+    <stageDefinition>
+        <number>1</number>
+        <name>承認ステージ1</name>
+        <notifyOnlyWhenNoDecision>false</notifyOnlyWhenNoDecision>
+        <reviewerSpecification>
+            <useTargetOwner>false</useTargetOwner>
+            <useTargetApprover>true</useTargetApprover>
+            <useObjectOwner>false</useObjectOwner>
+            <useObjectApprover>false</useObjectApprover>
+        </reviewerSpecification>
+        <outcomeStrategy>acceptedIfNotDenied</outcomeStrategy>
+        <outcomeIfNoReviewers>accept</outcomeIfNoReviewers>
+    </stageDefinition>
+    <reviewStrategy>
+        <outcomeStrategy>acceptedIfNotDenied</outcomeStrategy>
+    </reviewStrategy>
+</accessCertificationDefinition>
