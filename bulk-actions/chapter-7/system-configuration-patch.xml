@@ -69,7 +69,7 @@
                                                 modelContext.getFocusContext().swallowToSecondaryDelta(itemDelta)
 
                                                 // Delta登録後にSecondary Deltaを再計算させる
-                                                // アサイン解除により算出されていたプロビジョニング内容を再計算して訂正する)
+                                                // アサイン解除により算出されていたプロビジョニング内容を再計算して訂正する
                                                 modelContext.rot()
                                             }
                                         }
