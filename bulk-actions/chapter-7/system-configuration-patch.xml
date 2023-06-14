@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<s:search xmlns:s="http://midpoint.evolveum.com/xml/ns/public/model/scripting-3"
+          xmlns:c="http://midpoint.evolveum.com/xml/ns/public/common/common-3"
+          xmlns:org="http://midpoint.evolveum.com/xml/ns/public/common/org-3"
+          xmlns:t="http://prism.evolveum.com/xml/ns/public/types-3">
+    <s:options>
+        <option>
+            <options>
+                <raw>true</raw>
+            </options>
+        </option>
+    </s:options>
+    <s:type>c:SystemConfigurationType</s:type>
+    <s:action>
+        <s:type>modify</s:type>
+        <s:parameter>
+            <s:name>delta</s:name>
+            <c:value>
+                <s:itemDelta>
+                    <t:modificationType>add</t:modificationType>
+                    <t:path>modelHooks</t:path>
+                    <t:value>
+                        <change>
+                            <hook>
+                                <name>異動時の引き継ぎ期間対応</name>
+                                <state>primary</state>
+                                <focusType>c:UserType</focusType>
+                                <script>
+                                    <code>
+                                    <![CDATA[
+                                        import com.evolveum.midpoint.prism.delta.*
+                                        import com.evolveum.midpoint.xml.ns._public.common.common_3.*
+                                        import com.evolveum.midpoint.schema.*
+                                        
+                                        modelContext?.focusContext?.getSummaryDelta()?.modifications?.findAll {
+                                            // 終了日時が未設定である主務または兼務の組織アサイン解除が、要求された変更情報に含まれているかどうかチェックする
+                                            return it.delete && it.path.equivalent(UserType.F_ASSIGNMENT) && it.valuesToDelete.any {
+                                                subtypeItem = it.items.find { it.path.last().equivalent(AssignmentType.F_SUBTYPE) }
+                                                activationItem = it.items.find { it.path.last().equivalent(AssignmentType.F_ACTIVATION) }
+
+                                                hasSubtype = subtypeItem?.realValues?.contains("primary") || subtypeItem?.realValues?.contains("secondary")
+                                                hasValidTo = activationItem?.realValue?.validTo != null
+
+                                                return hasSubtype && !hasValidTo
+                                            }
+                                        }
+                                        ?.forEach {
+                                            // 含まれている場合は、終了日時を14日後に設定して再度アサインを行う変更情報を追加する
+                                            return it.valuesToDelete.forEach {
+                                                // アサイン解除となったAssignmentTypeをcloneして再アサインに利用する
+                                                assignment = it.asContainerable().cloneWithoutId()
+
+                                                // 現在日時+14日の00:00を取得
+                                                validTo = basic.fromNow("P14D")
+                                                validTo = basic.roundDownToMidnight(validTo)
+
+                                                // 終了日時をアサインに設定
+                                                assignment.activation.validTo = validTo
+
+                                                // 終了日時を設定したアサインでDeltaを作成
+                                                itemDelta = prismContext.deltaFor(UserType.class)
+                                                    .item(UserType.F_ASSIGNMENT)
+                                                    .add(assignment)
+                                                    .asItemDelta()
+                                                
+                                                log.info("Add delta for handover assignment: {}", itemDelta.debugDump(2))
+
+                                                // Deltaを登録
+                                                modelContext.getFocusContext().swallowToSecondaryDelta(itemDelta)
+
+                                                // Delta登録後にSecondary Deltaを再計算させる
+                                                // アサイン解除により算出されていたプロビジョニング内容を再計算して訂正する
+                                                modelContext.rot()
+                                            }
+                                        }
+                                    ]]>
+                                    </code>
+                                </script>
+                            </hook>
+                        </change>
+                    </t:value>
+                </s:itemDelta>
+            </c:value>
+        </s:parameter>
+    </s:action>
+</s:search>
