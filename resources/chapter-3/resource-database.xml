@@ -105,6 +105,15 @@
                     </source>
                 </outbound>
             </attribute>
+            <attribute>
+                <ref>ri:accesslevel</ref>
+                <!--
+                    Development Application RoleとDevelopment Manager Roleの両方を
+                    保持している場合に、strongマッピングとしたDevelopment Manager Role
+                    を優先させるために設定
+                -->
+                <exclusiveStrong>true</exclusiveStrong>
+            </attribute>
             <activation>
                 <administrativeStatus>
                     <outbound />

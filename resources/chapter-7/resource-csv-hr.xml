@@ -135,6 +135,18 @@
                     </expression>
                     <target>
                         <path>$focus/assignment</path>
+                        <!--
+                            役職変更時にDevelopment Manager Roleを解除する
+                        -->
+                        <set>
+                            <condition>
+                                <script>
+                                    <code>
+                                        midpoint.resolveReferenceIfExists(input?.targetRef)?.name?.orig == 'Development Manager Role'
+                                    </code>
+                                </script>
+                            </condition>
+                        </set>
                     </target>
                     <condition>
                         <script>
